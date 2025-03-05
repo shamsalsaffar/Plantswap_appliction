@@ -63,7 +63,7 @@ The REST API for PlantSwap handles the following resources and operations:
 
  ```java 
 
-@PutMapping("/{transactionId}/EXCHANGED") // Plants marked for exchange can only be exchanged for other plants, not sold
+@PutMapping("/{transactionId}/EXCHANGED") // Plants marked for exchange can only be exchanged for other plants
     public ResponseEntity<Transaction> markTransactionAsExchanged(@PathVariable String transactionId) {
         Transaction transaction = transactionRepository.findById(transactionId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
