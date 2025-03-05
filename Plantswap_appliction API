@@ -1,0 +1,39 @@
+﻿# Plantswap_appliction  
+
+Description
+PlantSwap is a plant exchange and sales application built using Spring Boot. It allows users to register, list plants for sale or exchange, and manage transactions. The API connects to a database MongoDB for storing user , plant and transactions data.  
+
+## Database Plantswap
+Database Structure
+The PlantSwap application uses a database that contains the following main entities:
+
+1. Users: Represents the users of the platform.<br> Collection Name: users
+3. Plants:Represents the plants available for sale or exchange on the platform and other plant information as age , size etc...<br>
+   Collection Name: plants
+
+4. Transactions:Represents the transactions between users for plant exchanges or sales.<br>
+   Collection Name: transactions
+
+   # API Specification
+The REST API for PlantSwap handles the following resources and operations:
+
+Plants
+POST /plants: Add a new plant for exchange/sale.
+GET /plants: Retrieve a list of all available plants.
+GET /plants/{id}: Retrieve information about a specific plant.
+PUT /plants/{id}: Update plant information.
+DELETE /plants/{id}: Remove a plant listing.
+GET /plants/available: Retrieve only available plants.
+Users
+POST /users: Register a new user.
+GET /users: Retrieve a list of all users.
+GET /users/{id}: Retrieve a specific user’s information.
+PUT /users/{id}: Update user information.
+DELETE /users/{id}: Delete a user.
+GET /users/{id}/plants: Retrieve all plants belonging to a specific user.
+Transactions
+POST /transactions: Register a new transaction (exchange or purchase).
+GET /transactions: Retrieve all transactions.
+GET /transactions/{id}: Retrieve a specific transaction.
+PUT /transactions/{id}: Update a transaction.
+GET /transactions/user/{userId}: Retrieve all transactions for a specific user.
