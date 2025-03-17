@@ -1,8 +1,11 @@
 package com.java24.plantswap.controllers;
 
 
+import com.java24.plantswap.models.PlantStatus;
 import com.java24.plantswap.models.Plants;
 import com.java24.plantswap.models.Transaction;
+import com.java24.plantswap.models.TransactionStatus;
+import com.java24.plantswap.repositories.PlantsRepository;
 import com.java24.plantswap.repositories.TransactionRepository;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,63 @@ import java.util.Optional;
 public class TransactionController {
     @Autowired
     private TransactionRepository transactionRepository;
+
+    // lägger till för att kunna göra metoderna för godkännande av transaktion
+    @Autowired
+    private PlantsRepository plantsRepository;
+
+    // lägger till nya endpoints för godkännande från båda parter
+
+    // du skulle nog behöva använda setter med för alla gamla fält i metoderna så att dom inte
+    // körs över och blir null... men typ nåt sånt här skulle lösa ditt problem :)
+
+    // metod som låter en seller godkänna trnasaktionen
+    @PutMapping("/{id}/approve/seller")
+    public ResponseEntity<Transaction> approveTransactionSeller(@PathVariable String id) {
+        // först måste vi hitta den existerande transaktionen som ska godkännas
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
+
+        // sätter status till true, att den är accepterad av seller
+        transaction.setSellerApproved(true);
+
+        // kontrollera om båda har godkänt och uppdatera status om så är fallet
+        if (transaction.isSellerApproved() && transaction.isBuyerApproved()) {
+            transaction.setStatus(TransactionStatus.COMPLETED);
+
+            // uppdatera plantans status om det är ett byte
+            Plants plant = transaction.getPlant();
+            if (plant != null) {
+                plant.setPlantStatus(PlantStatus.EXCHANGED);
+                plantsRepository.save(plant);
+            }
+        }
+
+        return ResponseEntity.ok(transactionRepository.save(transaction));
+    }
+
+    // metod som låter en buyer godkänna transaktionen
+    @PutMapping("/{id}/approve/buyer")
+    public ResponseEntity<Transaction> approveTransactionBuyer(@PathVariable String id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
+
+        transaction.setBuyerApproved(true);
+
+        // kontrollera om båda har godkänt och uppdatera status om så är fallet
+        if (transaction.isSellerApproved() && transaction.isBuyerApproved()) {
+            transaction.setStatus(TransactionStatus.COMPLETED);
+
+            // uppdatera plantans status om det är ett byte
+            Plants plant = transaction.getPlant();
+            if (plant != null) {
+                plant.setPlantStatus(PlantStatus.EXCHANGED);
+                plantsRepository.save(plant);
+            }
+        }
+
+        return ResponseEntity.ok(transactionRepository.save(transaction));
+    }
 
     @PostMapping("/purchase")
     public ResponseEntity<Transaction> createTransaction(@RequestBody @Valid Transaction transaction) {

@@ -14,6 +14,11 @@ import java.time.LocalDate;
 public class Transaction {
     @Id
     private String id;
+
+    // lägger till två nya fält för att kunna hantera att båda kan godkänna transaktionen
+    private boolean sellerApproved = false;
+    private boolean buyerApproved = false;
+
     @DBRef (lazy = false)
     @NotNull(message = "Enter seller's name ")
     private User seller;
@@ -130,4 +135,19 @@ public class Transaction {
         return buyer != null ? buyer.getName() : "Not Available";
     }
 
+    public boolean isSellerApproved() {
+        return sellerApproved;
+    }
+
+    public void setSellerApproved(boolean sellerApproved) {
+        this.sellerApproved = sellerApproved;
+    }
+
+    public boolean isBuyerApproved() {
+        return buyerApproved;
+    }
+
+    public void setBuyerApproved(boolean buyerApproved) {
+        this.buyerApproved = buyerApproved;
+    }
 }
