@@ -1,98 +1,249 @@
-﻿# Plantswap_appliction
+#  PlantSwap Application
 
-Description
-PlantSwap is a plant exchange and sales application built using Spring Boot. It allows users to register, list plants for sale or exchange, and manage transactions. The API connects to a database MongoDB for storing user , plant and transactions data.  
+PlantSwap is a backend REST API built with **Java**, **Spring Boot**, and **MongoDB**.
+It simulates a plant exchange and selling platform where users can create accounts, list plants, and manage transactions.
 
-## Database Plantswap
-Database Structure
-The PlantSwap application uses a database that contains the following main entities:
+This project demonstrates backend development concepts such as:
 
-1. Users: Represents the users of the platform.<br> Collection Name: users
-3. Plants:Represents the plants available for sale or exchange on the platform and other plant information as age , size etc...<br>
-   Collection Name: plants
+* RESTful API design
+* CRUD operations
+* MongoDB integration
+* Request validation
+* API testing with Postman
 
-4. Transactions:Represents the transactions between users for plant exchanges or sales.<br>
-   Collection Name: transactions
+---
 
-   # API Specification
-The REST API for PlantSwap handles the following resources and operations:
+##  Technologies Used
 
-#### Plants
-. POST /plants: Add a new plant for exchange/sale.<br>
-. GET /plants: Retrieve a list of all available plants.<br>
-. GET /plants/{id}: Retrieve information about a specific plant.<br>
-. PUT /plants/{id}: Update plant information.<br>
-. DELETE /plants/{id}: Remove a plant listing.<br>
-. GET /plants/available: Retrieve only available plants.<br>   
-#### Users
-. POST /users: Register a new user.<br>
-. GET /users: Retrieve a list of all users.<br>
-. GET /users/{id}: Retrieve a specific user’s information.<br>
-. PUT /users/{id}: Update user information.<br>
-. DELETE /users/{id}: Delete a user.<br>
-. GET /users/{id}/plants: Retrieve all plants belonging to a specific user.<br>
-#### Transactions
-. POST /transactions: Register a new transaction (exchange or purchase).<br>
-. GET /transactions: Retrieve all transactions.<br>
-. GET /transactions/{id}: Retrieve a specific transaction.<br>
-. PUT /transactions/{id}: Update a transaction.<br>
-. GET /transactions/user/{userId}: Retrieve all transactions for a specific user.<br>
+* Java
+* Spring Boot
+* Spring Web
+* Spring Data MongoDB
+* Jakarta Validation
+* MongoDB
+* Maven
 
-## Business Rules
-##### . A user cannot have more than 10 active listings at the same time.
+---
 
- ```java
- 
- @PostMapping("/user/{id}") // to add plant to user
-    public ResponseEntity<Plants> createPlantsForUser(@RequestBody @Valid Plants plants, @PathVariable String id) {
-        User user = userRepository.findById(id)  // find user
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+##  Installation Requirements
 
-        // Check if the user already has 10 active listings
-        long activeCount = plantsRepository.countByUserIdAndPlantStatus(user.getId(), PlantStatus.AVAILABLE);
-        if (activeCount >= 10) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User cannot have more than 10 active listings");
-        }
+To run this project locally, you need:
 
-        List<Plants> userPlants = user.getPlants(); // create list to store user's plants
-        if (userPlants == null) {
-            userPlants = new ArrayList<>();
-        }
+* JDK
+* IntelliJ IDEA (CE or UE)
+* MongoDB (Compass or local server)
+* Maven
+
+---
+
+## ▶️ Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/shamsalsaffar/Plantswap_appliction.git
 ```
-##### . Plants marked for exchange can only be exchanged for other plants, not sold.<br>
 
- ```java 
+---
 
-@PutMapping("/{transactionId}/EXCHANGED") // Plants marked for exchange can only be exchanged for other plants
-    public ResponseEntity<Transaction> markTransactionAsExchanged(@PathVariable String transactionId) {
-        Transaction transaction = transactionRepository.findById(transactionId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
+### 2. Open the project
 
-        transaction.setStatus(TransactionStatus.EXCHANGED);
+Open the project in **IntelliJ IDEA**.
 
-        if (transaction.getPlants() == null) {
-            transaction.setPlants(new ArrayList<>());
-        }
+---
 
-        for (Plants plant : transaction.getPlants()) {
-            plant.setPlantStatus(PlantStatus.EXCHANGED);
-            plantsRepository.save(plant);
-        }
+### 3. Start MongoDB
 
-        Transaction updatedTransaction = transactionRepository.save(transaction);
-        return ResponseEntity.ok(updatedTransaction);
-    }
- ```
-    
-##### . Both parties must agree to the exchange before it is executed.<br>
-##### . Priced plants must have a fixed price between 50 and 1000 SEK.<br>
-         when use [@] Vaild in Trasaction control can prove vaildation in this code below  
+Make sure MongoDB is running on:
+
+```text
+localhost:27017
+```
+
+---
+
+### 4. Configure database connection
+
+In `src/main/resources/application.properties`:
+
+```properties
+spring.application.name=Plantswap
+spring.data.mongodb.host=localhost
+spring.data.mongodb.port=27017
+spring.data.mongodb.database=plantswap
+```
+
+---
+
+### 5. Run the application
+
+```bash
+mvn clean install
+mvn spring-boot:run
+```
+
+---
+
+##  Project Functionality
+
+The API includes three main areas:
+
+* User management
+* Plant management
+* Transaction management
+
+---
+
+##  Database Structure
+
+The application uses MongoDB with these collections:
+
+* **users** → stores user information
+* **plants** → stores plant listings
+* **transactions** → stores purchase transactions
+
+---
+
+##  API Endpoints
+
+### 👤 User Management
+
+Base path: `/api/user`
+
+| Method | Endpoint         | Description    |
+| ------ | ---------------- | -------------- |
+| POST   | `/api/user`      | Create user    |
+| GET    | `/api/user`      | Get all users  |
+| GET    | `/api/user/{id}` | Get user by ID |
+| PUT    | `/api/user/{id}` | Update user    |
+| DELETE | `/api/user/{id}` | Delete user    |
+
+#### Example – Create User
+
+```json
+{
+  "name": "Shams AlSaffar",
+  "email": "shams@example.com",
+  "password": "123456",
+  "phone": "0701234567"
+}
+```
+
+---
+
+###  Plant Management
+
+Base path: `/api/plants`
+
+| Method | Endpoint                      | Description           |
+| ------ | ----------------------------- | --------------------- |
+| POST   | `/api/plants`                 | Create plant          |
+| POST   | `/api/plants/{userId}`        | Create plant for user |
+| GET    | `/api/plants`                 | Get all plants        |
+| GET    | `/api/plants/{id}`            | Get plant by ID       |
+| GET    | `/api/plants/status/{status}` | Get plants by status  |
+| PUT    | `/api/plants/{id}`            | Update plant          |
+| DELETE | `/api/plants/{id}`            | Delete plant          |
+
+#### Example – Create Plant
+
+```json
+{
+  "name": "Monstera",
+  "trivialName": "Swiss Cheese Plant",
+  "age": 2,
+  "plantSize": "MEDIUM",
+  "plantType": "INDOOR",
+  "waterRequirement": "MEDIUM",
+  "lightRequirement": "INDIRECT",
+  "difficultyLevel": "EASY",
+  "plantStatus": "AVAILABLE",
+  "payMethod": "SALE",
+  "price": 150
+}
+```
+
+---
+
+###  Transaction Management
+
+Base path: `/api/transactions`
+
+| Method | Endpoint                     | Description           |
+| ------ | ---------------------------- | --------------------- |
+| POST   | `/api/transactions/purchase` | Create transaction    |
+| GET    | `/api/transactions`          | Get all transactions  |
+| GET    | `/api/transactions/{id}`     | Get transaction by ID |
+| PUT    | `/api/transactions/{id}`     | Update transaction    |
+| DELETE | `/api/transactions/{id}`     | Delete transaction    |
+
+#### Example – Create Transaction
+
+```json
+{
+  "buyerId": "buyer123",
+  "sellerId": "seller456",
+  "plantId": "plant789",
+  "status": "PENDING"
+}
+```
+
+---
+
+##  Business Rules
+
+* A user cannot have more than **10 active plant listings**
+* Plants marked for exchange cannot be sold
+* Both parties must agree before an exchange is completed
+* Plant price must be between **50 and 1000 SEK**
+
+---
+
+##  API Documentation (Postman)
 
 
- ```java 
 
- @DecimalMin(value = "50.00", message = "price must be at least 50 kr ")
-    @DecimalMax(value = "1000.00", message = "Price must be at most 1000 kr")
-    private BigDecimal price; 
-  ```
-  
+```
+
+```
+
+---
+
+## ⚠️ Known Limitations
+
+* A user can currently buy or exchange plants with themselves
+* Plants can have both price and exchange settings at the same time
+
+### Suggested Improvements
+
+* Prevent transactions where buyer = seller
+* Improve validation depending on plant type (sale vs exchange)
+
+---
+
+##  Future Improvements
+
+* Add Service layer
+* Add DTOs
+* Add authentication (JWT)
+* Improve validation
+* Add Swagger documentation
+* Write unit tests
+
+---
+
+##  Author
+
+**Shams AlSaffar**
+
+---
+
+##  Purpose of the Project
+
+This project was built to practice:
+
+* Java backend development
+* Spring Boot
+* REST API design
+* MongoDB
+* API testing with Postman
